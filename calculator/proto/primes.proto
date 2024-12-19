@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package calculator;
+
+option go_package = "github.com/go-primer/calculator/proto";
+
+message PrimesRequest{
+    uint32 base_number = 1;
+}
+
+message PrimesResponse {
+    uint32 result = 1;
+}

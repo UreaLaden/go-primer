@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package calculator;
+
+option go_package = "github.com/go-primer/calculator/proto";
+
+message AverageRequest{
+    int64 value = 1;
+}
+
+message AverageResponse {
+    double average = 1;
+}

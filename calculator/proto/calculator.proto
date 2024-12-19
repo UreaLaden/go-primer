@@ -4,24 +4,13 @@ package calculator;
 
 option go_package = "github.com/go-primer/calculator/proto";
 
-message AddRequest {
-    uint32 num1 = 1;
-    uint32 num2 = 2;
-}
+import "primes.proto";
+import "sum.proto";
+import "averages.proto";
 
-message AddResponse {
-    uint32 result = 1;
-}
-
-message PrimesRequest{
-    uint32 base_number = 1;
-}
-
-message PrimesResponse {
-    uint32 result = 1;
-}
 
 service CalculatorService{
     rpc Add (AddRequest) returns (AddResponse);
     rpc Primes (PrimesRequest) returns (stream PrimesResponse);
+    rpc Average (stream AverageRequest) returns (AverageResponse);
 }
