@@ -13,6 +13,15 @@ message AddResponse {
     uint32 result = 1;
 }
 
+message PrimesRequest{
+    uint32 base_number = 1;
+}
+
+message PrimesResponse {
+    uint32 result = 1;
+}
+
 service CalculatorService{
     rpc Add (AddRequest) returns (AddResponse);
+    rpc Primes (PrimesRequest) returns (stream PrimesResponse);
 }
