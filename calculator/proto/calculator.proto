@@ -7,10 +7,11 @@ option go_package = "github.com/go-primer/calculator/proto";
 import "primes.proto";
 import "sum.proto";
 import "averages.proto";
-
+import "max.proto";
 
 service CalculatorService{
     rpc Add (AddRequest) returns (AddResponse);
     rpc Primes (PrimesRequest) returns (stream PrimesResponse);
     rpc Average (stream AverageRequest) returns (AverageResponse);
+    rpc Max (stream MaxRequest) returns (stream MaxResponse);
 }

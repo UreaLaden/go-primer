@@ -2,19 +2,36 @@ BIN_DIR = bin
 PROTO_DIR = proto
 SERVER_DIR = server
 CLIENT_DIR = client
+BASH_PATH := $(shell where bash 2>nul)
+BASH_INSTALLED := $(if $(BASH_PATH),true,false)
+
 
 ifeq ($(OS), Windows_NT)
-	SHELL := powershell.exe
-	.SHELLFLAGS := -NoProfile -Command
-	SHELL_VERSION = $(shell (Get-Host | Select-Object Version | Format-Table -HideTableHeaders | Out-String).Trim())
-	OS = $(shell "{0} {1}" -f "windows", (Get-ComputerInfo -Property OsVersion, OsArchitecture | Format-Table -HideTableHeaders | Out-String).Trim())
-	PACKAGE = $(shell (Get-Content go.mod -head 1).Split(" ")[1])
-	CHECK_DIR_CMD = if (!(Test-Path $@)) { $$e = [char]27; Write-Error "$$e[31mDirectory $@ doesn't exist$${e}[0m" }
-	HELP_CMD = Select-String "^[a-zA-Z_-]+:.*?\#\# .*$$" "./Makefile" | Foreach-Object { $$_data = $$_.matches -split ":.*?\#\# "; $$obj = New-Object PSCustomObject; Add-Member -InputObject $$obj -NotePropertyName ('Command') -NotePropertyValue $$_data[0]; Add-Member -InputObject $$obj -NotePropertyName ('Description') -NotePropertyValue $$_data[1]; $$obj } | Format-Table -HideTableHeaders @{Expression={ $$e = [char]27; "$$e[36m$$($$_.Command)$${e}[0m" }}, Description
-	RM_F_CMD = Remove-Item -erroraction silentlycontinue -Force
-	RM_RF_CMD = ${RM_F_CMD} -Recurse
-	SERVER_BIN = ${SERVER_DIR}.exe
-	CLIENT_BIN = ${CLIENT_DIR}.exe
+	ifeq ($(BASH_INSTALLED),false)		
+		SHELL := powershell.exe
+		.SHELLFLAGS := -NoProfile -Command
+		SHELL_VERSION = $(shell (Get-Host | Select-Object Version | Format-Table -HideTableHeaders | Out-String).Trim())
+		OS = $(shell "{0} {1}" -f "windows", (Get-ComputerInfo -Property OsVersion, OsArchitecture | Format-Table -HideTableHeaders | Out-String).Trim())
+		PACKAGE = $(shell (Get-Content go.mod -head 1).Split(" ")[1])
+		CHECK_DIR_CMD = if (!(Test-Path $@)) { $$e = [char]27; Write-Error "$$e[31mDirectory $@ doesn't exist$${e}[0m" }
+		HELP_CMD = Select-String "^[a-zA-Z_-]+:.*?\#\# .*$$" "./Makefile" | Foreach-Object { $$_data = $$_.matches -split ":.*?\#\# "; $$obj = New-Object PSCustomObject; Add-Member -InputObject $$obj -NotePropertyName ('Command') -NotePropertyValue $$_data[0]; Add-Member -InputObject $$obj -NotePropertyName ('Description') -NotePropertyValue $$_data[1]; $$obj } | Format-Table -HideTableHeaders @{Expression={ $$e = [char]27; "$$e[36m$$($$_.Command)$${e}[0m" }}, Description
+		RM_F_CMD = Remove-Item -erroraction silentlycontinue -Force
+		RM_RF_CMD = ${RM_F_CMD} -Recurse
+		SERVER_BIN = ${SERVER_DIR}.exe
+		CLIENT_BIN = ${CLIENT_DIR}.exe
+	 else        
+        SHELL := bash
+        .SHELLFLAGS := -c
+        SHELL_VERSION = $(shell echo $$BASH_VERSION)
+        OS = windows $$(uname -m)
+        PACKAGE = $(shell head -n 1 go.mod | cut -d ' ' -f 2)
+        CHECK_DIR_CMD = if [ ! -d "$@" ]; then echo -e "\033[31mDirectory $@ doesn't exist\033[0m" >&2; exit 1; fi
+        HELP_CMD = grep -E "^[a-zA-Z_-]+:.*?## .*$$" ./Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+        RM_F_CMD = rm -f
+        RM_RF_CMD = rm -rf
+        SERVER_BIN = ${SERVER_DIR}.exe
+        CLIENT_BIN = ${CLIENT_DIR}.exe
+    endif
 else
 	SHELL := bash
 	SHELL_VERSION = $(shell echo $$BASH_VERSION)
